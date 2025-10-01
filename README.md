@@ -5,7 +5,13 @@ Este bot foi desenvolvido para **gerenciar o acesso a um canal específico do Di
 Ele controla automaticamente quem pode enviar mensagens em determinados horários, além de oferecer comandos manuais de administração.
 
 ### 🔑 Funcionalidades
-- ⏰ **Bloqueio automático**:  
+
+- ⏰ **Bloqueio automático**
+
+- 🔔 **Avisos automáticos antes do bloqueio**:  
+  - O bot envia lembretes no canal **30, 20 e 10 minutos antes das 10h**, avisando que o chat será bloqueado.  
+  - As mensagens incluem emojis de alerta para chamar a atenção dos usuários.  
+:  
   - Todos os usuários são bloqueados das **10h às 19h**, exceto os autorizados.  
 - ⏳ **Desbloqueio automático**:  
   - Todos podem enviar mensagens das **19h às 10h**.  

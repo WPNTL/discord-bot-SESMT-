@@ -1,22 +1,25 @@
+#!/root/discord-bot/venv/bin/python
+# -*- coding: utf-8 -*-
+
 import discord
 from discord.ext import commands, tasks
 from datetime import datetime
 import logging
 
 # =========================
-# CONFIGURAÇÃO DE LOG
+# CONFIGURACAO DE LOG
 # =========================
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
-        logging.FileHandler("bot.log"),  # salva no arquivo bot.log
-        logging.StreamHandler()           # continua mostrando no terminal
+        logging.FileHandler("bot.log", encoding="utf-8"),  # forca UTF-8
+        logging.StreamHandler()
     ]
 )
 
 # =========================
-# CONFIGURAÇÃO DO BOT
+# CONFIGURACAO DO BOT
 # =========================
 TOKEN = "COLOQUE AQUI O TOKEN"
 
@@ -26,6 +29,7 @@ OWNER_ID = ID do owner do server (autorizado a mandar mensagens quando bloqueado
 USER_ID = ID de outro user (autorizado a mandar mensagens)
 
 canal_bloqueado = False
+avisos_enviados = set()
 
 intents = discord.Intents.default()
 intents.members = True
@@ -33,7 +37,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # =========================
-# FUNÇÕES DE BLOQUEIO/DESBLOQUEIO
+# FUNCOES DE BLOQUEIO/DESBLOQUEIO
 # =========================
 async def bloquear_canal():
     guild = bot.get_guild(GUILD_ID)
@@ -68,33 +72,65 @@ async def desbloquear_canal():
     return False
 
 # =========================
+# TAREFA DE CHECAGEM
+# =========================
+async def check_time_task():
+    global canal_bloqueado, avisos_enviados
+    agora = datetime.now()
+    hora = agora.hour
+    minuto = agora.minute
+
+    guild = bot.get_guild(GUILD_ID)
+    canal = guild.get_channel(CHANNEL_ID)
+
+    # Avisos 30, 20 e 10 minutos antes do bloqueio
+    if hora == 9 and minuto in [30, 40, 50]:
+        if minuto not in avisos_enviados:
+            if canal:
+                mensagens = {
+                    30: "⏰ Faltam **30 minutos** para o bloqueio do envio de mensagens! 🚫",
+                    40: "⏰ Faltam **20 minutos** para o bloqueio do envio de mensagens! 🚫",
+                    50: "⏰ Faltam **10 minutos** para o bloqueio do envio de mensagens! 🚫"
+                }
+                await canal.send(mensagens[minuto])
+                avisos_enviados.add(minuto)
+                logging.info(f"📢 Aviso enviado ({mensagens[minuto]})")
+
+    # Bloqueio automatico
+    if 10 <= hora < 19 and not canal_bloqueado:
+        sucesso = await bloquear_canal()
+        if sucesso:
+            canal_bloqueado = True
+            avisos_enviados.clear()
+            if canal:
+                await canal.send("🔒 O canal foi bloqueado para envio de mensagens.")
+            logging.info(f"🔒 Canal bloqueado automaticamente as {agora.strftime('%H:%M')}")
+
+    # Desbloqueio automatico
+    elif (hora >= 19 or hora < 10) and canal_bloqueado:
+        sucesso = await desbloquear_canal()
+        if sucesso:
+            canal_bloqueado = False
+            if canal:
+                await canal.send("🔓 O canal foi desbloqueado, todos podem falar agora! 🎉")
+            logging.info(f"🔓 Canal desbloqueado automaticamente as {agora.strftime('%H:%M')}")
+
+# =========================
+# LOOP AUTOMATICO
+# =========================
+@tasks.loop(minutes=1)
+async def check_time():
+    await check_time_task()
+
+# =========================
 # EVENTOS
 # =========================
 @bot.event
 async def on_ready():
     logging.info(f"✅ Bot logado como {bot.user}")
-    check_time.start()  # start do loop automático
-
-# =========================
-# LOOP AUTOMÁTICO
-# =========================
-@tasks.loop(minutes=1)
-async def check_time():
-    global canal_bloqueado
-    agora = datetime.now()
-    hora = agora.hour
-
-    if 10 <= hora < 19 and not canal_bloqueado:
-        sucesso = await bloquear_canal()
-        if sucesso:
-            canal_bloqueado = True
-            logging.info(f"🔒 Canal bloqueado automaticamente às {agora.strftime('%H:%M')}")
-
-    elif (hora >= 19 or hora < 10) and canal_bloqueado:
-        sucesso = await desbloquear_canal()
-        if sucesso:
-            canal_bloqueado = False
-            logging.info(f"🔓 Canal desbloqueado automaticamente às {agora.strftime('%H:%M')}")
+    check_time.start()
+    # Checagem imediata ao iniciar
+    await check_time_task()
 
 # =========================
 # COMANDOS MANUAIS
@@ -102,7 +138,7 @@ async def check_time():
 @bot.command()
 async def bloquear(ctx):
     if ctx.author.id != OWNER_ID:
-        await ctx.send("🚫 Você não tem permissão para usar este comando.")
+        await ctx.send("🚫 Voce nao tem permissao para usar este comando.")
         return
     sucesso = await bloquear_canal()
     if sucesso:
@@ -110,12 +146,12 @@ async def bloquear(ctx):
         canal_bloqueado = True
         await ctx.send("🔒 Canal bloqueado manualmente!")
     else:
-        await ctx.send("⚠️ Não consegui encontrar o canal.")
+        await ctx.send("⚠️ Nao consegui encontrar o canal.")
 
 @bot.command()
 async def desbloquear(ctx):
     if ctx.author.id != OWNER_ID:
-        await ctx.send("🚫 Você não tem permissão para usar este comando.")
+        await ctx.send("🚫 Voce nao tem permissao para usar este comando.")
         return
     sucesso = await desbloquear_canal()
     if sucesso:
@@ -123,7 +159,7 @@ async def desbloquear(ctx):
         canal_bloqueado = False
         await ctx.send("🔓 Canal desbloqueado manualmente!")
     else:
-        await ctx.send("⚠️ Não consegui encontrar o canal.")
+        await ctx.send("⚠️ Nao consegui encontrar o canal.")
 
 # =========================
 # RODA O BOT
