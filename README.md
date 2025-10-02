@@ -10,7 +10,7 @@ Ele controla automaticamente quem pode enviar mensagens em determinados horário
 
 - 🤖 **Resposta automática "OK!"**:  
   - Quando o canal estiver **desbloqueado** (das 19h às 10h), toda vez que um usuário que não seja o dono ou o usuário autorizado enviar uma mensagem,  
-    o bot responde automaticamente com **"OK!"** após delay de 5 segundos, marcando a mensagem original.  
+    o bot responde automaticamente com **"OK!"** marcando a mensagem original.  
   - Todas as respostas são registradas no arquivo `bot.log`.  
 
 
@@ -23,12 +23,7 @@ Ele controla automaticamente quem pode enviar mensagens em determinados horário
   - Todos podem enviar mensagens das **19h às 10h**.  
 - 🛠 **Comandos manuais**:  
   - `!bloquear` → bloqueia o canal imediatamente (somente Owner).  
-  - `!desbloquear` → libera o canal imediatamente (somente Owner). 
-    - Novo comando `!autook` para gerenciar a resposta automática:  
-    - `!autook on` → ativa a resposta automática.  
-    - `!autook off` → desativa a resposta automática.  
-    - `!autook` → mostra o estado atual
-     
+  - `!desbloquear` → libera o canal imediatamente (somente Owner).  
 - 📜 **Logs**:  
   - Todas as ações são registradas em `bot.log` e também no terminal.  
 - 🔁 **Execução 24/7**:  
@@ -149,3 +144,28 @@ sudo timedatectl set-timezone America/Sao_Paulo
 ## 📜 Licença
 Este projeto é distribuído sob a licença **MIT**.  
 Sinta-se livre para usar, modificar e compartilhar.  
+
+
+---
+
+## 🆕 Atualizações Recentes
+
+### Resposta Automática "OK!"
+- O bot responde automaticamente com **"OK!"** sempre que um usuário (exceto os IDs autorizados) envia uma mensagem no canal quando este está **desbloqueado** (entre 19h e 10h).  
+- Há um **delay de 5 segundos** antes da resposta.  
+- Se a mensagem for exatamente uma saudação simples (`bom dia`, `oi`, `olá`, `opa`, etc.), ela **não será respondida** — a menos que venha acompanhada de **anexos** (imagens, arquivos, etc.).  
+
+### Comando Manual Novo
+- `!autook on` → ativa a resposta automática "OK!".  
+- `!autook off` → desativa a resposta automática "OK!".  
+- `!autook` sem parâmetros → mostra o estado atual (ativado ou desativado).  
+
+### Avisos de Bloqueio
+- O bot envia avisos automáticos **com @everyone** no canal:  
+  - 30 minutos antes do bloqueio (09:30)  
+  - 20 minutos antes do bloqueio (09:40)  
+  - 10 minutos antes do bloqueio (09:50)  
+
+### Logs
+- Agora o log registra também quando uma mensagem é **respondida com OK!** ou **ignorada** (no caso das saudações simples).  
+

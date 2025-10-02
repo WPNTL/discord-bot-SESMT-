@@ -85,7 +85,7 @@ async def check_time_task():
     guild = bot.get_guild(GUILD_ID)
     canal = guild.get_channel(CHANNEL_ID)
 
-    # Avisos 30, 20 e 10 minutos antes do bloqueio
+    # Avisos 30, 20 e 10 minutos antes do bloqueio (com @everyone)
     if hora == 9 and minuto in [30, 40, 50]:
         if minuto not in avisos_enviados:
             if canal:
@@ -152,13 +152,19 @@ async def on_message(message):
     if message.author.id in [USER_ID, OWNER_ID]:
         return
 
-    # Se o canal estiver desbloqueado e auto_ok_ativo -> responder "OK!" com delay
-    if not canal_bloqueado and auto_ok_ativo:
-        await asyncio.sleep(5)  # delay de 5 segundos
-        await message.reply("OK!")
-        logging.info(f"📢 Respondido com OK! para {message.author} (ID {message.author.id})")
+    # Lista de mensagens a serem ignoradas (se vierem sozinhas, sem anexo)
+    mensagens_ignoradas = {"bom dia", "bom dia!", "boa noite", "boa noite!", "oi", "oi!", "olá", "olá!", "opa", "opa!"}
 
-    # Necessário pra não travar comandos
+    conteudo = message.content.strip().lower()
+
+    if not canal_bloqueado and auto_ok_ativo:
+        if conteudo in mensagens_ignoradas and not message.attachments:
+            logging.info(f"🤝 Mensagem ignorada de {message.author}: '{message.content}' (sem anexos)")
+        else:
+            await asyncio.sleep(5)  # delay de 5s
+            await message.reply("OK!")
+            logging.info(f"📢 Respondido com OK! para {message.author} (ID {message.author.id})")
+
     await bot.process_commands(message)
 
 # =========================
