@@ -8,6 +8,12 @@ Ele controla automaticamente quem pode enviar mensagens em determinados horário
 
 - ⏰ **Bloqueio automático**
 
+- 🤖 **Resposta automática "OK!"**:  
+  - Quando o canal estiver **desbloqueado** (das 19h às 10h), toda vez que um usuário que não seja o dono ou o usuário autorizado enviar uma mensagem,  
+    o bot responde automaticamente com **"OK!"** após delay de 5 segundos, marcando a mensagem original.  
+  - Todas as respostas são registradas no arquivo `bot.log`.  
+
+
 - 🔔 **Avisos automáticos antes do bloqueio**:  
   - O bot envia lembretes no canal **30, 20 e 10 minutos antes das 10h**, avisando que o chat será bloqueado.  
   - As mensagens incluem emojis de alerta para chamar a atenção dos usuários.  

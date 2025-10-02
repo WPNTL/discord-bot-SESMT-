@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands, tasks
 from datetime import datetime
 import logging
+import asyncio
 
 # =========================
 # CONFIGURACAO DE LOG
@@ -13,7 +14,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
-        logging.FileHandler("bot.log", encoding="utf-8"),  # forca UTF-8
+        logging.FileHandler("bot.log", encoding="utf-8"),  # força UTF-8
         logging.StreamHandler()
     ]
 )
@@ -30,6 +31,7 @@ USER_ID = ID de outro user (autorizado a mandar mensagens)
 
 canal_bloqueado = False
 avisos_enviados = set()
+auto_ok_ativo = True  # por padrão, resposta OK! vem ativada
 
 intents = discord.Intents.default()
 intents.members = True
@@ -128,9 +130,36 @@ async def check_time():
 @bot.event
 async def on_ready():
     logging.info(f"✅ Bot logado como {bot.user}")
+    bot.loop.create_task(check_time_task())
     check_time.start()
-    # Checagem imediata ao iniciar
-    await check_time_task()
+
+# =========================
+# RESPONDER "OK!" AUTOMATICO
+# =========================
+@bot.event
+async def on_message(message):
+    global canal_bloqueado, auto_ok_ativo
+
+    # Ignorar mensagens do proprio bot
+    if message.author == bot.user:
+        return
+
+    # Garantir que seja o canal monitorado
+    if message.channel.id != CHANNEL_ID:
+        return
+
+    # Ignorar os IDs autorizados
+    if message.author.id in [USER_ID, OWNER_ID]:
+        return
+
+    # Se o canal estiver desbloqueado e auto_ok_ativo -> responder "OK!" com delay
+    if not canal_bloqueado and auto_ok_ativo:
+        await asyncio.sleep(5)  # delay de 5 segundos
+        await message.reply("OK!")
+        logging.info(f"📢 Respondido com OK! para {message.author} (ID {message.author.id})")
+
+    # Necessário pra não travar comandos
+    await bot.process_commands(message)
 
 # =========================
 # COMANDOS MANUAIS
@@ -160,6 +189,28 @@ async def desbloquear(ctx):
         await ctx.send("🔓 Canal desbloqueado manualmente!")
     else:
         await ctx.send("⚠️ Nao consegui encontrar o canal.")
+
+@bot.command()
+async def autook(ctx, state: str = None):
+    global auto_ok_ativo
+    if ctx.author.id != OWNER_ID:
+        await ctx.send("🚫 Voce nao tem permissao para usar este comando.")
+        return
+
+    if state is None:
+        await ctx.send(f"📢 Resposta OK! esta {'ativada' if auto_ok_ativo else 'desativada'}.")
+        return
+
+    if state.lower() == "on":
+        auto_ok_ativo = True
+        await ctx.send("✅ Resposta OK! foi **ativada**.")
+        logging.info("✅ Resposta OK! ativada manualmente pelo owner.")
+    elif state.lower() == "off":
+        auto_ok_ativo = False
+        await ctx.send("⛔ Resposta OK! foi **desativada**.")
+        logging.info("⛔ Resposta OK! desativada manualmente pelo owner.")
+    else:
+        await ctx.send("⚠️ Use `!autook on` ou `!autook off`.")
 
 # =========================
 # RODA O BOT
