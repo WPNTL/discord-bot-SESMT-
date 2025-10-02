@@ -23,7 +23,12 @@ Ele controla automaticamente quem pode enviar mensagens em determinados horário
   - Todos podem enviar mensagens das **19h às 10h**.  
 - 🛠 **Comandos manuais**:  
   - `!bloquear` → bloqueia o canal imediatamente (somente Owner).  
-  - `!desbloquear` → libera o canal imediatamente (somente Owner).  
+  - `!desbloquear` → libera o canal imediatamente (somente Owner). 
+    - Novo comando `!autook` para gerenciar a resposta automática:  
+    - `!autook on` → ativa a resposta automática.  
+    - `!autook off` → desativa a resposta automática.  
+    - `!autook` → mostra o estado atual
+     
 - 📜 **Logs**:  
   - Todas as ações são registradas em `bot.log` e também no terminal.  
 - 🔁 **Execução 24/7**:  
