@@ -90,9 +90,9 @@ async def check_time_task():
         if minuto not in avisos_enviados:
             if canal:
                 mensagens = {
-                    30: "⏰ Faltam **30 minutos** para o bloqueio do envio de mensagens! 🚫",
-                    40: "⏰ Faltam **20 minutos** para o bloqueio do envio de mensagens! 🚫",
-                    50: "⏰ Faltam **10 minutos** para o bloqueio do envio de mensagens! 🚫"
+                    30: "⏰ @everyone Faltam **30 minutos** para o bloqueio do envio de mensagens! 🚫",
+                    40: "⏰ @everyone Faltam **20 minutos** para o bloqueio do envio de mensagens! 🚫",
+                    50: "⏰ @everyone Faltam **10 minutos** para o bloqueio do envio de mensagens! 🚫"
                 }
                 await canal.send(mensagens[minuto])
                 avisos_enviados.add(minuto)
